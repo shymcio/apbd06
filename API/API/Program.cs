@@ -29,18 +29,15 @@ app.MapGet("api/animals", (IConfiguration configuration, string orderBy = "name"
     var animals = new List<GetAllAnimalsResponse>();
     using (var sqlConnection = new SqlConnection(configuration.GetConnectionString("Default")))
     {
-        string orderByClause = "";
+        string orderByClause = $"ORDER BY {orderBy} ASC";
         var sqlCommand = new SqlCommand();
         
-        if ((orderBy.ToLower().Equals("name")) || (orderBy.ToLower().Equals("description")) || (orderBy.ToLower().Equals("area")) || (orderBy.ToLower().Equals("category")))
+        if ((orderBy.ToLower().Equals("description")) || (orderBy.ToLower().Equals("area")) || (orderBy.ToLower().Equals("category")))
         {
             orderByClause = $"ORDER BY {orderBy} ASC";
-            sqlCommand = new SqlCommand($"SELECT * FROM Animal {orderByClause}", sqlConnection);
         }
-        else
-        {
-            sqlCommand = new SqlCommand($"SELECT * FROM Animal {orderByClause}", sqlConnection);
-        }
+        
+        sqlCommand = new SqlCommand($"SELECT * FROM Animal {orderByClause}", sqlConnection);
         
         sqlCommand.Parameters.AddWithValue("@name", orderBy);
         sqlCommand.Connection.Open();
@@ -79,6 +76,22 @@ app.MapPost("api/animals", (IConfiguration configuration, CreateAnimalRequest re
         sqlCommand.ExecuteNonQuery();
         
         return Results.Created();
+    }
+});
+
+app.MapDelete("api/animals/{id:int}", (IConfiguration configuration, int id) =>
+{
+    using (var sqlConnection = new SqlConnection(configuration.GetConnectionString("Default")))
+    {
+        var sqlCommand = new SqlCommand("DELETE FROM Animal WHERE IdAnimal = @id;", sqlConnection);
+        
+        sqlCommand.Parameters.AddWithValue("@id", id);
+        
+        sqlCommand.Connection.Open();
+
+        sqlCommand.ExecuteNonQuery();
+        
+        return Results.NoContent();
     }
 });
 
