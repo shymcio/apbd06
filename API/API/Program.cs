@@ -79,6 +79,31 @@ app.MapPost("api/animals", (IConfiguration configuration, CreateAnimalRequest re
     }
 });
 
+app.MapPut("api/animals/{id:int}", (IConfiguration configuration, CreateAnimalRequest request, int id) =>
+{
+    using (var sqlConnection = new SqlConnection(configuration.GetConnectionString("Default")))
+    {
+        var sqlCommand = new SqlCommand("UPDATE Animal " +
+                                        "SET Name = @name, " +
+                                        "Description = @description, " +
+                                        "Category = @category, " +
+                                        "Area = @area " +
+                                        "WHERE IdAnimal = @id;", sqlConnection);
+        
+        sqlCommand.Parameters.AddWithValue("@name", request.Name);
+        sqlCommand.Parameters.AddWithValue("@description", request.Description);
+        sqlCommand.Parameters.AddWithValue("@category", request.Category);
+        sqlCommand.Parameters.AddWithValue("@area", request.Area);
+        sqlCommand.Parameters.AddWithValue("@id", id);
+        
+        sqlCommand.Connection.Open();
+
+        sqlCommand.ExecuteNonQuery();
+        
+        return Results.NoContent();
+    }
+});
+
 app.MapDelete("api/animals/{id:int}", (IConfiguration configuration, int id) =>
 {
     using (var sqlConnection = new SqlConnection(configuration.GetConnectionString("Default")))
